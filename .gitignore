@@ -1,0 +1,12 @@
+.vscode
+trainSVM
+trainSVM.dSYM/
+main.dSYM/
+test.dSYM/
+Val/
+main
+Open_CV.code-workspace
+prac.cpp
+test1.cpp
+
+.DS_Store
