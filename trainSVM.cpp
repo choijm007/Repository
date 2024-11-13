@@ -22,6 +22,7 @@ int main(void){
     // string pathMeta = "./Train/Train/Annotations"; // 파일을 가져올 폴더 경로
     // string pathImage = "./Train/Train/JPEGImages"; 
 
+    
     // vector<string> Annotations;
     // vector<string> Jpeg;
 
@@ -48,35 +49,21 @@ int main(void){
     // for(int i=0; i<Annotations.size(); i++){
     //     getData(Jpeg[i], Annotations[i], trainingData, labels);
     // }
-    string path = "./PETA dataset/MIT/archive";
+    string path = "./dataset/trainTrue";
     
-    for (const auto& entry : fs::directory_iterator(path)) {
-        if (entry.is_regular_file()&&endsWith(entry.path(), ".jpg")) { // 일반 파일인 경우만
-            Mat roi = imread((string)entry.path());
-            
-
-            std::vector<float> descriptors = hog.getFeature(roi); 
-            cv::Mat hogFeatures = cv::Mat(descriptors).clone().reshape(1, 1); // 특징 벡터를 행렬로 변환
-            trainingData.push_back(hogFeatures); // 학습 데이터에 추가
-            labels.push_back(1);
-        }
+    for (const auto& entry : fs::directory_iterator(path)) {        
+        Mat roi = imread((string)entry.path());
+        std::vector<float> descriptors = hog.getFeature(roi); 
+        cv::Mat hogFeatures = cv::Mat(descriptors).clone().reshape(1, 1); // 특징 벡터를 행렬로 변환
+        trainingData.push_back(hogFeatures); // 학습 데이터에 추가
+        labels.push_back(1);
+        
     }
     cout<<"30%"<<endl;
-    path = "./PETA dataset/PRID/archive";
-    
-    for (const auto& entry : fs::directory_iterator(path)) {
-        if (entry.is_regular_file()&&endsWith(entry.path(), ".png")) { // 일반 파일인 경우만
-            Mat roi = imread((string)entry.path());
 
-            std::vector<float> descriptors = hog.getFeature(roi); 
-            cv::Mat hogFeatures = cv::Mat(descriptors).clone().reshape(1, 1); // 특징 벡터를 행렬로 변환
-            trainingData.push_back(hogFeatures); // 학습 데이터에 추가
-            labels.push_back(1);
-        }
-    }
 
     cout<<"60%"<<endl;
-    path = "./tile_1393";
+    path = "./dataset/trainFalse";
     
     for (const auto& entry : fs::directory_iterator(path)) {
         // if (entry.is_regular_file()) { // 일반 파일인 경우만
@@ -124,30 +111,27 @@ int main(void){
 
 
     // True Test data
-    path = "./PETA dataset/VIPeR/archive";
+    path = "./dataset/testTrue";
     int correct = 0;
     int ncorrect =0;
     int cnt =0;
     for (const auto& entry : fs::directory_iterator(path)) {
-        if (cnt>1264){
-            break;
-        }
-        if (entry.is_regular_file()&&endsWith(entry.path(), ".bmp")) { // 일반 파일인 경우만
-            Mat testImage = imread((string)entry.path());
+        // 일반 파일인 경우만
+        Mat testImage = imread((string)entry.path());
 
-            std::vector<float> descriptors = hog.getFeature(testImage); 
+        std::vector<float> descriptors = hog.getFeature(testImage); 
 
-            cv::Mat testFeatures = cv::Mat(descriptors).clone().reshape(1, 1);
-            float response = svm->predict(testFeatures);
-            if (response == 1) {
-                //std::cout << "Positive class" << std::endl;
-                correct++;
-            } else {
-                //std::cout << "Negative class" << std::endl;
-                ncorrect++;
-            }
-            cnt++;
+        cv::Mat testFeatures = cv::Mat(descriptors).clone().reshape(1, 1);
+        float response = svm->predict(testFeatures);
+        if (response == 1) {
+            //std::cout << "Positive class" << std::endl;
+            correct++;
+        } else {
+            //std::cout << "Negative class" << std::endl;
+            ncorrect++;
         }
+        cnt++;
+        
     }
     cout<<cnt<<endl;
     cout<<"TP"<<correct<<endl;
@@ -155,7 +139,7 @@ int main(void){
 
 
     //False Test Data
-    path = "./tile_1451 2";
+    path = "./dataset/testFalse";
     correct = 0;
     ncorrect = 0;
     cnt =0;
@@ -185,7 +169,7 @@ int main(void){
         float response = svm->predict(testFeatures);
         if (response == 1) {
             //std::cout << "Positive class" << std::endl;
-            cout<<entry.path()<<endl;
+            //cout<<entry.path()<<endl;
             ncorrect++;               
         } else {
             //std::cout << "Negative class" << std::endl;
