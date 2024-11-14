@@ -181,7 +181,7 @@ int main(void){
     cout<<"TN"<<correct<<endl;
     cout<<"FP"<<ncorrect<<endl;
 
-    //svm->save("trained_svm_model.xml");
+    svm->save("trained_svm_model.xml");
     
 
     return 0;

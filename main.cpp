@@ -1,41 +1,79 @@
 #include "HOG.hpp"
 
+
 int main(void){
     // 예측
     HOG hog;
     Ptr<cv::ml::SVM> svm = Algorithm::load<cv::ml::SVM>("trained_svm_model.xml");
 
-    string pathImage = "./Test/Test/JPEGImages"; 
+    string path = "./detectionData";
+    for (const auto& entry : fs::directory_iterator(path)) {
+        
+        double scaleFactor = 1.3; 
+        double currentScale = 1.0;
+        int minSizeWidth = hog.getWidth(); 
+        int minSizeHeight = hog.getHeight();
 
-    int cnt=0;
-    int correct=0;
-    try {
-        for (const auto& entry : fs::directory_iterator(pathImage)) {
-            if (entry.is_regular_file()) { // 일반 파일인 경우만
-                // Mat testImage = imread(entry.path());
+        Mat testImage = imread((string)entry.path());
 
-                // std::vector<float> descriptors = hog.getFeature(testImage); 
-
-                // cv::Mat testFeatures = cv::Mat(descriptors).clone().reshape(1, 1);
-                // float response = svm->predict(testFeatures);
-                // if (response == 1) {
-                //     std::cout << "Positive class" << std::endl;
-                //     correct++;
-                // } else {
-                //     std::cout << "Negative class" << std::endl;
-                // }
-                // cnt++;
-            }
+        if(testImage.empty()){
+            cout<<"Can't Open file"<<endl;
+            continue;
         }
-    } catch (const fs::filesystem_error& e) {
-        std::cerr << "Error: " << e.what() << std::endl;
+
+        int height = testImage.rows;
+        int width = testImage.cols;
+        
+        vector<Rect> detectedRects;
+        HOG hog;
+        Mat resizeImage;
+        resizeImage = testImage.clone();
+
+
+        while(minSizeWidth <= resizeImage.cols && minSizeHeight<=resizeImage.rows){
+            
+            resize(resizeImage, resizeImage, Size(), 1.0 / scaleFactor, 1.0 / scaleFactor);
+            height = resizeImage.rows;
+            width = resizeImage.cols;
+            currentScale *= scaleFactor;
+
+            for (int h = 0; h < height-hog.getHeight(); h += 5){
+
+                for (int w = 0; w < width-hog.getWidth(); w += 5) {
+
+                    Rect range(w,h, hog.getWidth(), hog.getHeight());
+                    Mat scr = resizeImage(range);
+                    // imshow("matching", scr);
+                    // waitKey(0);
+                    vector<float> descriptors = hog.getFeature(scr);
+                    cv::Mat testFeatures = cv::Mat(descriptors).clone().reshape(1, 1);
+                    float response = svm->predict(testFeatures);
+                    if (response == 1) {
+                        // cout<<"detect"<<endl;
+                        int originalX = static_cast<int>(w * currentScale);
+                        int originalY = static_cast<int>(h * currentScale);
+                        int originalW = static_cast<int>(hog.getWidth() * currentScale);
+                        int originalH = static_cast<int>(hog.getHeight() * currentScale);
+
+                        // rectangle(testImage, Rect(originalX, originalY, originalW, originalH), Scalar(0, 255, 0), 2);
+                        detectedRects.push_back(Rect(originalX, originalY, originalW, originalH));
+                    }
+                }
+
+            }
+
+        }
+        vector<int> weights;
+        groupRectangles(detectedRects, weights, 5, 0.2);
+
+        // 최종 검출 결과 표시
+        for (const auto& rect : detectedRects) {
+            rectangle(testImage, rect, Scalar(0, 255, 0), 2);
+        }
+
+        imshow("Detected",testImage);
+        waitKey(0);
     }
 
-
-
-    
-
-
-
-
+    return 0;
 }

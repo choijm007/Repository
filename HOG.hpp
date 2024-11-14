@@ -31,10 +31,10 @@ private:
 
 public:
     HOG(){
-        WINDOWSIZE_WIDTH =256;
-        WINDOWSIZE_HEIGHT =512;
-        CELLSIZE =16;
-        BLOCKSIZE =32;
+        WINDOWSIZE_WIDTH =64;
+        WINDOWSIZE_HEIGHT =128;
+        CELLSIZE =8;
+        BLOCKSIZE =16;
 
 
     }
@@ -51,10 +51,13 @@ public:
     void visualizeHOG(const std::vector<float>& featureVector);
 
     int getHeight(){return WINDOWSIZE_HEIGHT;}
-    int getWidht(){
+    int getWidth(){
         return WINDOWSIZE_WIDTH;
+    }
+    int getCellSize(){
+        return CELLSIZE;
     }
 
 };
-vector<Rect> parseXML(const string& xmlPath);
-void getData(const string& imgPath, const string& xmlPath, Mat& trainingData, Mat& labels);
+// vector<Rect> parseXML(const string& xmlPath);
+// void getData(const string& imgPath, const string& xmlPath, Mat& trainingData, Mat& labels);
