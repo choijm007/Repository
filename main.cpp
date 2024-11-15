@@ -6,10 +6,10 @@ int main(void){
     HOG hog;
     Ptr<cv::ml::SVM> svm = Algorithm::load<cv::ml::SVM>("trained_svm_model.xml");
 
-    string path = "./detectionData";
+    string path = "./TestData/test/detect";
     for (const auto& entry : fs::directory_iterator(path)) {
         
-        double scaleFactor = 1.3; 
+        double scaleFactor = 1.5; 
         double currentScale = 1.0;
         int minSizeWidth = hog.getWidth(); 
         int minSizeHeight = hog.getHeight();
@@ -28,7 +28,7 @@ int main(void){
         HOG hog;
         Mat resizeImage;
         resizeImage = testImage.clone();
-
+        resize(resizeImage, resizeImage, Size(), 1.5, 1.5);
 
         while(minSizeWidth <= resizeImage.cols && minSizeHeight<=resizeImage.rows){
             
@@ -64,7 +64,7 @@ int main(void){
 
         }
         vector<int> weights;
-        groupRectangles(detectedRects, weights, 5, 0.2);
+        groupRectangles(detectedRects, weights, 2, 0.3);
 
         // 최종 검출 결과 표시
         for (const auto& rect : detectedRects) {

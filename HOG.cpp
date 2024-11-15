@@ -184,6 +184,40 @@ void HOG::Filtering(Mat& scr, Mat& dst, Mat& filter, int v) {
         }
     }
 }
+// Mat HOG::Padding(Mat s, int width, int height, int FilterSize, int type) {
+//     int PadSize = FilterSize / 2;
+//     int nheight = height + 2 * PadSize;
+//     int nwidth = width + 2 * PadSize;
+
+//     Mat scr;
+//     s.convertTo(scr, CV_32F);
+//     Mat rtn(nheight, nwidth, CV_32F, Scalar(0));
+
+    
+//     for (int h = 0; h < height; h++) {
+//         for (int w = 0; w < width; w++) {
+//             rtn.at<float>(h + PadSize, w + PadSize) = scr.at<float>(h, w);
+//         }
+//     }
+
+    
+//     for (int w = 0; w < width; w++) {
+//         for (int h = 0; h < PadSize; h++) {
+//             rtn.at<float>(h, w + PadSize) = scr.at<float>(0, w);
+//             rtn.at<float>(h + height + PadSize, w + PadSize) = scr.at<float>(height - 1, w);
+//         }
+//     }
+
+    
+//     for (int h = 0; h < nheight; h++) {
+//         for (int w = 0; w < PadSize; w++) {
+//             rtn.at<float>(h, w) = rtn.at<float>(h, PadSize);
+//             rtn.at<float>(h, w + PadSize + width) = rtn.at<float>(h, PadSize + width - 1);
+//         }
+//     }
+
+//     return rtn;
+// }
 Mat HOG::Padding(Mat s, int width, int height, int FilterSize, int type) {
     int PadSize = FilterSize / 2;
     int nheight = height + 2 * PadSize;
@@ -193,14 +227,14 @@ Mat HOG::Padding(Mat s, int width, int height, int FilterSize, int type) {
     s.convertTo(scr, CV_32F);
     Mat rtn(nheight, nwidth, CV_32F, Scalar(0));
 
-    
+    // 중앙 이미지 복사
     for (int h = 0; h < height; h++) {
         for (int w = 0; w < width; w++) {
             rtn.at<float>(h + PadSize, w + PadSize) = scr.at<float>(h, w);
         }
     }
 
-    
+    // 상단과 하단 패딩
     for (int w = 0; w < width; w++) {
         for (int h = 0; h < PadSize; h++) {
             rtn.at<float>(h, w + PadSize) = scr.at<float>(0, w);
@@ -208,7 +242,7 @@ Mat HOG::Padding(Mat s, int width, int height, int FilterSize, int type) {
         }
     }
 
-    
+    // 좌우 패딩
     for (int h = 0; h < nheight; h++) {
         for (int w = 0; w < PadSize; w++) {
             rtn.at<float>(h, w) = rtn.at<float>(h, PadSize);
@@ -218,6 +252,8 @@ Mat HOG::Padding(Mat s, int width, int height, int FilterSize, int type) {
 
     return rtn;
 }
+
+
 
 std::vector<float> HOG::getFeature(Mat t){
     // Mat t = imread("people.png", IMREAD_GRAYSCALE);

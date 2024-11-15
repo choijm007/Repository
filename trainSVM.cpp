@@ -19,37 +19,7 @@ int main(void){
 
     Mat trainingData; // 모든 HOG 특징 벡터를 결합한 학습 데이터 행렬
     Mat labels;       // 각 이미지의 라벨 (1 또는 -1 등)
-    // string pathMeta = "./Train/Train/Annotations"; // 파일을 가져올 폴더 경로
-    // string pathImage = "./Train/Train/JPEGImages"; 
-
-    
-    // vector<string> Annotations;
-    // vector<string> Jpeg;
-
-    // try {
-    //     for (const auto& entry : fs::directory_iterator(pathMeta)) {
-    //         if (entry.is_regular_file()) { // 일반 파일인 경우만
-
-    //             Annotations.push_back(entry.path());
-    //         }
-    //     }
-    //     for (const auto& entry : fs::directory_iterator(pathImage)) {
-    //         if (entry.is_regular_file()) { // 일반 파일인 경우만
-
-    //             Jpeg.push_back(entry.path());
-    //         }
-    //     }
-    //     sort(Annotations.begin(), Annotations.end());
-    //     sort(Jpeg.begin(), Jpeg.end());
-        
-    // } catch (const fs::filesystem_error& e) {
-    //     std::cerr << "Error: " << e.what() << std::endl;
-    // }
-    
-    // for(int i=0; i<Annotations.size(); i++){
-    //     getData(Jpeg[i], Annotations[i], trainingData, labels);
-    // }
-    string path = "./dataset/trainTrue";
+    string path = "./TestData/true";
     
     for (const auto& entry : fs::directory_iterator(path)) {        
         Mat roi = imread((string)entry.path());
@@ -63,7 +33,7 @@ int main(void){
 
 
     cout<<"60%"<<endl;
-    path = "./dataset/trainFalse";
+    path = "./TestData/false";
     
     for (const auto& entry : fs::directory_iterator(path)) {
         // if (entry.is_regular_file()) { // 일반 파일인 경우만
@@ -111,13 +81,17 @@ int main(void){
 
 
     // True Test data
-    path = "./dataset/testTrue";
+    path = "./TestData/test/trueTest";
     int correct = 0;
     int ncorrect =0;
     int cnt =0;
     for (const auto& entry : fs::directory_iterator(path)) {
         // 일반 파일인 경우만
         Mat testImage = imread((string)entry.path());
+        if(testImage.empty()){
+            cout<<"can't open testImage True"<<endl;
+            continue;
+        }
 
         std::vector<float> descriptors = hog.getFeature(testImage); 
 
@@ -139,7 +113,7 @@ int main(void){
 
 
     //False Test Data
-    path = "./dataset/testFalse";
+    path = "./TestData/test/falseTest";
     correct = 0;
     ncorrect = 0;
     cnt =0;
@@ -162,6 +136,10 @@ int main(void){
         //     cnt++;
         // }
         Mat testImage = imread((string)entry.path());
+        if(testImage.empty()){
+            cout<<"can't open testImage True"<<endl;
+            continue;
+        }
 
         std::vector<float> descriptors = hog.getFeature(testImage); 
 
