@@ -61,3 +61,6 @@ public:
 };
 // vector<Rect> parseXML(const string& xmlPath);
 // void getData(const string& imgPath, const string& xmlPath, Mat& trainingData, Mat& labels);
+void Filtering(Mat& scr, Mat& dst, Mat& filter, int v);
+Mat Padding(Mat scr, int width, int height, int FilterSize, int type);
+void GaussianPyramid(const Mat& src, Mat& dst);

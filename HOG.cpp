@@ -254,11 +254,11 @@ Mat HOG::Padding(Mat s, int width, int height, int FilterSize, int type) {
 }
 
 
-
 std::vector<float> HOG::getFeature(Mat t){
     // Mat t = imread("people.png", IMREAD_GRAYSCALE);
     Mat scr;
-    cvtColor(t, t, COLOR_BGR2GRAY);
+    if(t.channels() != 1)
+        cvtColor(t, t, COLOR_BGR2GRAY);
     
     resize(t, scr, Size(WINDOWSIZE_WIDTH, WINDOWSIZE_HEIGHT));
 
@@ -285,6 +285,87 @@ std::vector<float> HOG::getFeature(Mat t){
 
     return histogram;
 
+}
+
+Mat Padding(Mat s, int width, int height, int FilterSize, int type) {
+    int PadSize = FilterSize / 2;
+    int nheight = height + 2 * PadSize;
+    int nwidth = width + 2 * PadSize;
+
+    Mat scr;
+    s.convertTo(scr, CV_32F);
+    Mat rtn(nheight, nwidth, CV_32F, Scalar(0));
+
+    // 중앙 이미지 복사
+    for (int h = 0; h < height; h++) {
+        for (int w = 0; w < width; w++) {
+            rtn.at<float>(h + PadSize, w + PadSize) = scr.at<float>(h, w);
+        }
+    }
+
+    // 상단과 하단 패딩
+    for (int w = 0; w < width; w++) {
+        for (int h = 0; h < PadSize; h++) {
+            rtn.at<float>(h, w + PadSize) = scr.at<float>(0, w);
+            rtn.at<float>(h + height + PadSize, w + PadSize) = scr.at<float>(height - 1, w);
+        }
+    }
+
+    // 좌우 패딩
+    for (int h = 0; h < nheight; h++) {
+        for (int w = 0; w < PadSize; w++) {
+            rtn.at<float>(h, w) = rtn.at<float>(h, PadSize);
+            rtn.at<float>(h, w + PadSize + width) = rtn.at<float>(h, PadSize + width - 1);
+        }
+    }
+
+    return rtn;
+}
+void Filtering(Mat& scr, Mat& dst, Mat& filter, int v) {
+    int height = scr.rows;
+    int width = scr.cols;
+    int n = 2 * v + 1;
+
+    Mat pad = Padding(scr, width, height, n, dst.type());
+    int PadSize = n / 2;
+
+    for (int h = 0; h < height; h++) {
+        for (int w = 0; w < width; w++) {
+            double conv = 0.0;
+            for (int j = 0; j < n; j++) {
+                for (int i = 0; i < n; i++) {
+                    conv += pad.at<float>(h + j, w + i) * filter.at<float>(j, i);
+                }
+            }
+            dst.at<float>(h, w) = static_cast<float>(conv);
+        }
+    }
+}
+
+void GaussianPyramid(const Mat& src, Mat& dst) {
+    Mat Gau = (Mat_<float>(5, 5) << 
+        1.0f / 256, 4.0f / 256, 6.0f / 256, 4.0f / 256, 1.0f / 256,
+        4.0f / 256, 16.0f / 256, 24.0f / 256, 16.0f / 256, 4.0f / 256,
+        6.0f / 256, 24.0f / 256, 36.0f / 256, 24.0f / 256, 6.0f / 256,
+        4.0f / 256, 16.0f / 256, 24.0f / 256, 16.0f / 256, 4.0f / 256,
+        1.0f / 256, 4.0f / 256, 6.0f / 256, 4.0f / 256, 1.0f / 256);
+
+    Mat tmp;
+    src.convertTo(tmp, CV_32F);
+    Mat filtered(tmp.size(), CV_32F);
+
+    Filtering(tmp, filtered, Gau, 2);
+
+    dst = Mat(Size((src.cols + 1) / 2, (src.rows + 1) / 2), CV_32F);
+
+    for (int y = 0; y < dst.rows; y++) {
+        for (int x = 0; x < dst.cols; x++) {
+            dst.at<float>(y, x) = filtered.at<float>(2 * y, 2 * x);
+        }
+    }
+
+    dst.convertTo(dst, src.type());
+    imshow("Gaussian Pyramid", dst);
 }
 
 /*
