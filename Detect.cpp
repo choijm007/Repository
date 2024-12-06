@@ -5,12 +5,12 @@
 int main(void){
     // 예측
     HOG hog;
-    Ptr<cv::ml::SVM> svm = Algorithm::load<cv::ml::SVM>("trained_svm_model.xml");
+    Ptr<cv::ml::SVM> svm = Algorithm::load<cv::ml::SVM>("trained_svm_model2.xml");
 
     string path = "./TestData/test/detect";
     for (const auto& entry : fs::directory_iterator(path)) {
         
-        double scaleFactor = 1.5; 
+        double scaleFactor = 2; 
         double currentScale = 1.0/2.0;
         int minSizeWidth = hog.getWidth(); 
         int minSizeHeight = hog.getHeight();
@@ -32,11 +32,11 @@ int main(void){
         resize(resizeImage, resizeImage, Size(), 2.0, 2.0);
         while(1){
             
-            resize(resizeImage, resizeImage, Size(), 1.0 / scaleFactor, 1.0 / scaleFactor);
+            // resize(resizeImage, resizeImage, Size(), 1.0 / scaleFactor, 1.0 / scaleFactor);
 
-            // Mat dst;
-            // GaussianPyramid(resizeImage, dst);            
-            // resizeImage = dst.clone();
+            Mat dst;
+            GaussianPyramid(resizeImage, dst);            
+            resizeImage = dst.clone();
 
             height = resizeImage.rows;
             width = resizeImage.cols;
@@ -44,9 +44,9 @@ int main(void){
             
             if(!(minSizeWidth <= resizeImage.cols && minSizeHeight<=resizeImage.rows))break;
 
-            for (int h = 0; h < height-hog.getHeight()-1; h += 5){
+            for (int h = 0; h < height-hog.getHeight()-1; h += 8){
 
-                for (int w = 0; w < width-hog.getWidth()-1; w += 5) {
+                for (int w = 0; w < width-hog.getWidth()-1; w += 8) {
 
                     Rect range(w,h, hog.getWidth(), hog.getHeight());
                     Mat scr = resizeImage(range);
@@ -72,15 +72,15 @@ int main(void){
 
         }
         vector<int> weights;
-        groupRectangles(detectedRects, weights, 1, 0.2);
+        groupRectangles(detectedRects, weights, 5, 0.5);
 
         // 최종 검출 결과 표시
         for (const auto& rect : detectedRects) {
             rectangle(img, rect, Scalar(0, 255, 0), 2);
         }
-
-        imshow("Detected",img);
-        waitKey(0);
+        imwrite("./output_more/" + (string)entry.path().filename(), img);
+        // imshow("Detected",img);
+        // waitKey(0);
     }
 
     return 0;

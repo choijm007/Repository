@@ -365,7 +365,7 @@ void GaussianPyramid(const Mat& src, Mat& dst) {
     }
 
     dst.convertTo(dst, src.type());
-    imshow("Gaussian Pyramid", dst);
+    // imshow("Gaussian Pyramid", dst);
 }
 
 /*

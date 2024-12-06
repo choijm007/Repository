@@ -15,7 +15,7 @@ int main(void){
     svm->setType(cv::ml::SVM::C_SVC);               // 분류 문제 설정
     svm->setKernel(cv::ml::SVM::LINEAR);             // 선형 커널 사용
     svm->setC(1.0);                                  // 정규화 파라미터 C
-    svm->setTermCriteria(cv::TermCriteria(cv::TermCriteria::MAX_ITER, 100, 1e-6)); // 종료 조건
+    svm->setTermCriteria(cv::TermCriteria(cv::TermCriteria::MAX_ITER, 1000, 1e-6)); // 종료 조건
 
     Mat trainingData; // 모든 HOG 특징 벡터를 결합한 학습 데이터 행렬
     Mat labels;       // 각 이미지의 라벨 (1 또는 -1 등)
@@ -29,6 +29,16 @@ int main(void){
         labels.push_back(1);
         
     }
+    path = "./TestData/archive";
+    for (const auto& entry : fs::directory_iterator(path)) {        
+        Mat roi = imread((string)entry.path());
+        if(roi.empty()) continue;
+        std::vector<float> descriptors = hog.getFeature(roi); 
+        cv::Mat hogFeatures = cv::Mat(descriptors).clone().reshape(1, 1); // 특징 벡터를 행렬로 변환
+        trainingData.push_back(hogFeatures); // 학습 데이터에 추가
+        labels.push_back(1);
+        
+    }
     cout<<"30%"<<endl;
 
 
@@ -36,15 +46,7 @@ int main(void){
     path = "./TestData/false";
     
     for (const auto& entry : fs::directory_iterator(path)) {
-        // if (entry.is_regular_file()) { // 일반 파일인 경우만
-        //     Mat roi = imread((string)entry.path());
-            
 
-        //     std::vector<float> descriptors = hog.getFeature(roi); 
-        //     cv::Mat hogFeatures = cv::Mat(descriptors).clone().reshape(1, 1); // 특징 벡터를 행렬로 변환
-        //     trainingData.push_back(hogFeatures); // 학습 데이터에 추가
-        //     labels.push_back(-1);
-        // }
         Mat roi = imread((string)entry.path());
         
 
@@ -54,6 +56,20 @@ int main(void){
         labels.push_back(-1);
     }
 
+    path = "./TestData/temp";
+    
+    for (const auto& entry : fs::directory_iterator(path)) {
+
+        Mat roi = imread((string)entry.path());
+        
+        if(roi.empty()) continue;
+        std::vector<float> descriptors = hog.getFeature(roi); 
+        cv::Mat hogFeatures = cv::Mat(descriptors).clone().reshape(1, 1); // 특징 벡터를 행렬로 변환
+        trainingData.push_back(hogFeatures); // 학습 데이터에 추가
+        labels.push_back(-1);
+    }
+
+    cout<<"Error"<<endl;
 
     vector<int> indices(trainingData.rows);
     iota(indices.begin(), indices.end(), 0);
@@ -103,6 +119,8 @@ int main(void){
         } else {
             //std::cout << "Negative class" << std::endl;
             ncorrect++;
+            // std::cout << "False Negative" << std::endl;
+            // cout<<entry.path()<<endl;
         }
         cnt++;
         
@@ -146,8 +164,8 @@ int main(void){
         cv::Mat testFeatures = cv::Mat(descriptors).clone().reshape(1, 1);
         float response = svm->predict(testFeatures);
         if (response == 1) {
-            //std::cout << "Positive class" << std::endl;
-            //cout<<entry.path()<<endl;
+            // std::cout << "False Positive" << std::endl;
+            // cout<<entry.path()<<endl;
             ncorrect++;               
         } else {
             //std::cout << "Negative class" << std::endl;
@@ -159,7 +177,7 @@ int main(void){
     cout<<"TN"<<correct<<endl;
     cout<<"FP"<<ncorrect<<endl;
 
-    svm->save("trained_svm_model.xml");
+    //svm->save("trained_svm_model.xml");
     
 
     return 0;
